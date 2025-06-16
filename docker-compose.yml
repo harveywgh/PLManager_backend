@@ -1,0 +1,13 @@
+version: '3.8'
+
+services:
+  backend:
+    image: harveyw18/plmanager:v6
+    build: .
+    container_name: plmanager_backend
+    restart: always
+    ports:
+      - "8025:8025"
+    volumes:
+      - .:/app
+      - ./outputs:/app/outputs

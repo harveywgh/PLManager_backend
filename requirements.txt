@@ -1,0 +1,11 @@
+# requirements.txt
+# Python >=3.9
+
+fastapi
+uvicorn
+pydantic
+pandas
+openpyxl    
+xlrd
+python-multipart
+pyinstaller
