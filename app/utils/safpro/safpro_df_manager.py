@@ -63,6 +63,6 @@ class SafproDataframeManager:
 
         total = grouped_df.groupby("Pallet n°")["Cartons"].transform("sum")
         grouped_df["Nb of pallets"] = grouped_df["Cartons"] / total
-        grouped_df["Nb of pallets"] = grouped_df["Nb of pallets"].round(6)
+        grouped_df["Nb of pallets"] = grouped_df["Nb of pallets"].round(5)
 
         return grouped_df

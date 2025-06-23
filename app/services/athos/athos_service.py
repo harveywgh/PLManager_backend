@@ -107,6 +107,14 @@ class AthosService(BaseAthosService):
         except Exception as e:
             print(f"⚠️ Erreur lors de l’attribution du Packaging type : {e}")
             record["Packaging type"] = ""
+        
+        # ✅ Remplace la Brand par "ATHOS B" si Cat vaut 1.5
+        try:
+            class_val = str(record.get("Class", "")).strip().upper()
+            if class_val == "CAT 1.5":
+                record["Brand"] = "ATHOS B"
+        except Exception as e:
+            print(f"⚠️ Erreur lors de la vérification de Cat = 1.5 : {e}")
 
 
         return record

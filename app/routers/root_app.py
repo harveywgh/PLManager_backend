@@ -13,11 +13,13 @@ from ..services.alg.alg_service import AlgService
 from ..services.langplaas.langplaas_service import LangplaasService
 from ..services.athos.athos_service import AthosService
 from ..services.asica.asica_service import AsicaService
+from ..services.laran.laran_service import LaranService
 from ..services.angon.angon_service import AngonService
 from ..services.gh.gh_service import GHService
 from ..services.cpf.cpf_service import CpfService
 from ..services.unifruitti.unifruitti_service import UnifruittiService
 from ..services.jaguacy.jaguacy_service import JaguacyService
+from ..services.sasini.sasini_service import SasiniService
 
 
 router = APIRouter()
@@ -37,7 +39,7 @@ FOURNISSEURS_SUPPORTES = {
     "Langplaas": LangplaasService,
     "Exportadora Fruticola Athos": AthosService,
     "Asica": AsicaService,
-    "Laran": AsicaService,
+    "Laran": LaranService,
     "Jaguacy": JaguacyService,
     "Angon": AngonService,
     "Agualima": AsicaService,
@@ -46,6 +48,7 @@ FOURNISSEURS_SUPPORTES = {
     "Mosqueta": UnifruittiService,
     "Pirona": UnifruittiService,
     "Hefei": UnifruittiService,
+    "Sasini": SasiniService,
 }
 
 # Dictionnaire pour stocker temporairement les paramètres CSV

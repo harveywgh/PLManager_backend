@@ -112,7 +112,10 @@ class SafproService(BaseSafproService):
                 record[csv_field] = self.csv_settings[csv_field]
             else:
                 value = self._get_field_value(row, excel_columns)
-                if csv_field in ["Nb of fruits per box", "Box tare (kg)", "Lot no"]:
+                if csv_field == "Box tare (kg)":
+                    # ✅ Toujours présent et on garde sa valeur brute
+                    record[csv_field] = self._get_field_value(row, excel_columns)
+                elif csv_field in ["Nb of fruits per box", "Lot no"]:
                     if isinstance(value, (int, float)) or (isinstance(value, str) and value.replace('.', '', 1).isdigit()):
                         record[csv_field] = value
                     else:
