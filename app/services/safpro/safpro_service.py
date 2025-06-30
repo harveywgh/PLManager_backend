@@ -6,7 +6,8 @@ class SafproService(BaseSafproService):
     def __init__(self):
         pl_column_mapping = self._initialize_column_mapping()
         super().__init__(pl_column_mapping)
-        self.csv_settings = {}  # Stocke les paramètres CSV envoyés par le front
+        self.csv_settings = {}
+        self.special_commodity_codes = ["OR", "LE"]
 
     def _initialize_column_mapping(self):
         """
@@ -115,12 +116,19 @@ class SafproService(BaseSafproService):
                 if csv_field == "Box tare (kg)":
                     # ✅ Toujours présent et on garde sa valeur brute
                     record[csv_field] = self._get_field_value(row, excel_columns)
-                elif csv_field in ["Nb of fruits per box", "Lot no"]:
-                    if isinstance(value, (int, float)) or (isinstance(value, str) and value.replace('.', '', 1).isdigit()):
-                        record[csv_field] = value
+                elif csv_field == "Nb of fruits per box":
+                    commodity_code = self._get_field_value(row, ["Commodity"])
+                    caliber = self._get_field_value(row, ["Size/caliber/count"])
+
+                    if commodity_code in self.special_commodity_codes:
+                        record[csv_field] = caliber  
                     else:
-                        print(f"⚠️ Valeur invalide ignorée pour '{csv_field}' : {value}")
-                        record[csv_field] = ""
+                        value = self._get_field_value(row, self.pl_column_mapping.get(csv_field, []))
+                        if isinstance(value, (int, float)) or (isinstance(value, str) and value.replace('.', '', 1).isdigit()):
+                            record[csv_field] = value
+                        else:
+                            print(f"⚠️ Valeur invalide ignorée pour '{csv_field}' : {value}")
+                            record[csv_field] = ""
                 elif csv_field in date_fields:
                     record[csv_field] = self._process_date_field(row, excel_columns)
                 else:

@@ -1,10 +1,11 @@
 import os
 import pandas as pd
-from .unifruitti_base import BaseUnifruittiService
-from ...utils.unifruitti.unifruitti_calculations import UnifruittiCalculations
+from .mavuno_base import BaseMavunoService
+from ...utils.mavuno.mavuno_calculations import MavunoCalculations
+from ...utils.mavuno.mavuno_loader import MavunoLoader
 
 
-class UnifruittiService(BaseUnifruittiService):
+class MavunoService(BaseMavunoService):
     def __init__(self):
         pl_column_mapping = self._initialize_column_mapping()
         super().__init__(pl_column_mapping)
@@ -12,22 +13,22 @@ class UnifruittiService(BaseUnifruittiService):
 
     def _initialize_column_mapping(self):
         return {
-            "Pallet no": ["Pallet n°"],
+            "Pallet no": ["Pallet"],
             "Exporter Name": ["Exporter name"],
-            "Shipping line": ["Shipping line"],
-            "Vessel Name": ["Vessel name"],
+            "Shipping line": ["Shipping Line / Vessel Name"],
+            "Vessel Name": ["Shipping Line / Vessel Name"],
             "Port of departure": ["Port of departure"],
             "Port of arrival": ["Port of arrival"],
             "Packing house departure date": ["Packing house departure (dd/mm/yyyy)"],
             "ETA": ["ETA (dd/mm/yyyy)"],
-            "Exporter Ref": ["Container n°"],
+            "Exporter Ref": ["Exporter ref"],
             "Seal No": ["Cod. Tracabilidad"],
             "Container No": ["Container n°"],
-            "Species": ["Product"],
+            "Species": ["Species"],
             "Variety": ["Variety"],
             "Size_caliber_count": ["Size"],
-            "Nb of fruits per box": ["Nb of fruits per box"],
-            "Class": ["Cat"],
+            "Nb of fruits per box": ["No. of Fruits per Box"],
+            "Class": ["Class"],
             "Brand": ["Brand"],
             "Country of origin": ["Country of origin"],
             "Packaging": ["Packaging"],
@@ -37,25 +38,26 @@ class UnifruittiService(BaseUnifruittiService):
             "Net weight per pallet (kg)": ["Net Weigt"],
             "Cartons per pallet": ["Cartons"],
             "Nb of pallets": ["Nb of pallets"],
-            "Lot no": ["Lot n°"],
+            "Lot no": ["LOT NO"],
             "Date of packaging": ["Packaging date (dd/mm/yyyy)"],
             "PACKING HOUSE/PRODUCER": ["Packing house / Producer"],
             "Producer": ["Producer name"],
             "ETD": ["ETD (dd/mm/yyyy)"],
-            "Temperature recorder no": ["Temperature recorder n°"],
+            "Temperature recorder no": ["Temperature recorder No"],
             "Date of harvesting": ["Harvest date \n (dd/mm/yyyy)"],
             "Plot": ["Field"],
             "Certifications": ["Certifications"],
-            "GGN": ["GGN\n(=GlobalGAP n°)"],
+            "GGN": ["GGN"],
             "COC": ["COC n°"],
-            "Certified GG/COC": ["Global G.A.P. certified"],
+            "Certified GG/COC": ["Certified GG"],
             "Forwarder at destination": ["Forwarder at destination"],
         }
 
     def apply_csv_settings(self, settings):
-        self.csv_settings = settings
-        print("📌 Paramètres CSV reçus APRES TRANSMISSION:", settings)
+        self.csv_settings = settings.copy()
+        print("📌 Paramètres CSV reçus APRES TRANSMISSION:", self.csv_settings)
 
+        # Vérifie les champs obligatoires
         mandatory_fields = ["country_of_origin", "forwarder"]
         for field in mandatory_fields:
             if field not in settings or not settings[field]:
@@ -65,6 +67,15 @@ class UnifruittiService(BaseUnifruittiService):
         self.csv_settings["Forwarder at destination"] = settings.get("forwarder", "Non spécifié")
         self.csv_settings["Importer"] = settings.get("importer", "Non spécifié")
         self.csv_settings["Archive"] = settings.get("archive", "Non")
+
+    
+    def _inject_metadata_from_file(self, file_path):
+        metadata = MavunoLoader.extract_metadata(file_path)
+        for key, value in metadata.items():
+            if value:
+                self.csv_settings[key] = value
+        print("📦 Paramètres finaux CSV (avec métadonnées) :", self.csv_settings)
+
 
     def _extract_data(self, container_df):
         extracted_data = []
@@ -89,7 +100,7 @@ class UnifruittiService(BaseUnifruittiService):
         # ➕ Calcul Nb of fruits per box
         caliber = self._get_field_value(row, ["Size"])
         weight = self._get_field_value(row, ["Net weight per box (kg)"])
-        record["Nb of fruits per box"] = UnifruittiCalculations.nb_of_fruits_per_box(caliber, weight)
+        record["Nb of fruits per box"] = MavunoCalculations.nb_of_fruits_per_box(caliber, weight)
         # Ne rien recalculer ici, la valeur est déjà correcte après le regroupement
         record["Nb of pallets"] = self._get_field_value(row, ["Nb of pallets"])
 

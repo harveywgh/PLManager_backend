@@ -1,19 +1,19 @@
-from ...utils.unifruitti.unifruitti_loader import UnifruittiLoader
-from ...utils.unifruitti.unifruitti_df_manager import UnifruittiDataframeManager
-from ...utils.unifruitti.unifruitti_container_manager import UnifruittiContainerManager
+from ...utils.mavuno.mavuno_loader import MavunoLoader
+from ...utils.mavuno.mavuno_df_manager import MavunoDataframeManager
+from ...utils.mavuno.mavuno_container_manager import MavunoContainerManager
 from ...utils.csv_manager import CSVManager
 import os
 import pandas as pd
 
 
-class BaseUnifruittiService:
+class BaseMavunoService:
     def __init__(self, pl_column_mapping):
         self.pl_column_mapping = pl_column_mapping
 
     def process_file(self, file_path, output_dir):
+        self._inject_metadata_from_file(file_path)
         dataframe = self._prepare_dataframe(file_path)
         containers = self._group_containers(dataframe)
-
         generated_files = []
         for index, container in enumerate(containers, start=1):
             container_df = self._filter_container(dataframe, container)
@@ -25,18 +25,18 @@ class BaseUnifruittiService:
         return generated_files
 
     def _prepare_dataframe(self, file_path):
-        dataframe = UnifruittiLoader.load_excel_file(file_path)
-        UnifruittiDataframeManager.normalize_columns(dataframe)
-        UnifruittiDataframeManager.validate_columns(dataframe, self.pl_column_mapping)
-        UnifruittiDataframeManager.add_missing_columns(dataframe, self.pl_column_mapping)
-        dataframe = UnifruittiDataframeManager.regroup_by_pallet_and_caliber(dataframe)
+        dataframe = MavunoLoader.load_excel_file(file_path)
+        MavunoDataframeManager.normalize_columns(dataframe)
+        MavunoDataframeManager.validate_columns(dataframe, self.pl_column_mapping)
+        MavunoDataframeManager.add_missing_columns(dataframe, self.pl_column_mapping)
+        dataframe = MavunoDataframeManager.regroup_by_pallet_and_caliber(dataframe)
         return dataframe
 
     def _group_containers(self, dataframe):
-        return UnifruittiContainerManager.group_by_container(dataframe)
+        return MavunoContainerManager.group_by_container(dataframe)
 
     def _filter_container(self, dataframe, container):
-        return UnifruittiContainerManager.filter_by_container(dataframe, "Container n°", container)
+        return MavunoContainerManager.filter_by_container(dataframe, "Container n°", container)
 
     def _process_container(self, container_df, output_dir, index, single_container):
         extracted_data = self._extract_data(container_df)
@@ -44,7 +44,7 @@ class BaseUnifruittiService:
         full_ref = exporter_ref if single_container else f"{exporter_ref}_{index}"
 
         for row in extracted_data:
-            row["Expporter Ref"] = full_ref
+            row["Exporter Ref"] = full_ref
 
         output_path = self._generate_csv_filename(output_dir, exporter_ref, index)
         self._write_to_csv(output_path, extracted_data)
@@ -59,16 +59,16 @@ class BaseUnifruittiService:
         Récupère la référence de l'exportateur pour nommer le fichier.
         Si non trouvée, utilise le numéro de conteneur. Sinon 'Unknown'.
         """
-        exporter_refs = container_df.get("Container n°", pd.Series()).dropna()
+        exporter_refs = container_df.get("Exporter ref", pd.Series()).dropna()
         if not exporter_refs.empty:
             return exporter_refs.iloc[0]
 
         container_nos = container_df.get("Container n°", pd.Series()).dropna()
         if not container_nos.empty:
-            print("⚠️ Aucun 'Container n°' trouvé, on utilise le 'Container n°'")
+            print("⚠️ Aucun 'Exporter ref' trouvé, on utilise le 'Container n°'")
             return container_nos.iloc[0]
 
-        print("⚠️ Aucun 'Container n°' ni 'Container n°' trouvé, on utilise 'Unknown'")
+        print("⚠️ Aucun 'Exporter ref' ni 'Container n°' trouvé, on utilise 'Unknown'")
         return "Unknown"
 
 

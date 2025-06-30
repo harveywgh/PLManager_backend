@@ -80,15 +80,6 @@ class CpfService(BaseCpfService):
                     value = self._process_date_field(value)
                 record[csv_field] = value if value not in [None, "Non spécifié"] else ""
 
-        # ✅ Concatène Packaging type + poids → "CARTON 4 KG"
-        try:
-            pack_type = record.get("Packaging type", "").strip().upper()
-            net_weight = float(str(record.get("Net weight per box (kg)", "")).replace(",", "."))
-            if pack_type and net_weight:
-                record["Packaging type"] = f"{pack_type} {int(net_weight)} KG"
-        except Exception as e:
-            print(f"⚠️ Erreur concat packaging/net weight: {e}")
-
         # ✅ Tare fixée à 0 (car Gross weight non fourni)
         record["Box tare (kg)"] = 0
 
