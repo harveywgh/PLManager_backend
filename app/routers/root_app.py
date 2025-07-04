@@ -21,6 +21,10 @@ from ..services.unifruitti.unifruitti_service import UnifruittiService
 from ..services.jaguacy.jaguacy_service import JaguacyService
 from ..services.sasini.sasini_service import SasiniService
 from ..services.mavuno.mavuno_service import MavunoService
+from ..services.jorie.jorie_service import JorieService
+from ..services.kakuzi.kakuzi_service import KakuziService
+from ..services.viru.viru_service import ViruService
+
 
 
 router = APIRouter()
@@ -51,6 +55,9 @@ FOURNISSEURS_SUPPORTES = {
     "Hefei": UnifruittiService,
     "Sasini": SasiniService,
     "Mavuno": MavunoService,
+    "Jorie": JorieService,
+    "Kakuzi": KakuziService,
+    "Viru": ViruService,
 }
 
 # Dictionnaire pour stocker temporairement les paramètres CSV
