@@ -1,4 +1,5 @@
 from .safpro_base import BaseSafproService
+from ...utils.safpro.safpro_calculations import SafproCalculations
 import pandas as pd
 import os
 
@@ -6,7 +7,8 @@ class SafproService(BaseSafproService):
     def __init__(self):
         pl_column_mapping = self._initialize_column_mapping()
         super().__init__(pl_column_mapping)
-        self.csv_settings = {}  # Stocke les paramètres CSV envoyés par le front
+        self.csv_settings = {}
+        self.special_commodity_codes = ["OR", "LE"]
 
     def _initialize_column_mapping(self):
         """
@@ -46,10 +48,10 @@ class SafproService(BaseSafproService):
             "Temperature recorder no": ["Temperature recorder n°"],
             "Date of harvesting": ["Date of harvesting"],
             "Plot": ["Plot"],
-            "Certifications": ["Certifications"],
+            "Certifications": ["Certified GG/COC"],
             "GGN": ["GGN"],
             "COC": ["COC n°"],
-            "Certified GG/COC": ["Certified GG/COC"],
+            "Certified GG/COC": ["Certifications"],
             "Forwarder at destination": ["Forwarder at destination"],
         }
     
@@ -112,12 +114,23 @@ class SafproService(BaseSafproService):
                 record[csv_field] = self.csv_settings[csv_field]
             else:
                 value = self._get_field_value(row, excel_columns)
-                if csv_field in ["Nb of fruits per box", "Box tare (kg)", "Lot no"]:
-                    if isinstance(value, (int, float)) or (isinstance(value, str) and value.replace('.', '', 1).isdigit()):
-                        record[csv_field] = value
-                    else:
-                        print(f"⚠️ Valeur invalide ignorée pour '{csv_field}' : {value}")
-                        record[csv_field] = ""
+                if csv_field == "Box tare (kg)":
+                    cartons = self._get_field_value(row, ["Cartons"])
+                    species = self._get_field_value(row, ["Commodity"])
+                    net_weight_box = self._get_field_value(row, ["Net weight per box (kg)"])
+                    original_value = self._get_field_value(row, excel_columns)
+
+                    record[csv_field] = SafproCalculations.box_tare(
+                        cartons_per_pallet=cartons,
+                        species=species,
+                        net_weight_per_box=net_weight_box,
+                        original_value=original_value
+                    )
+                elif csv_field == "Nb of fruits per box":
+                    commodity_code = self._get_field_value(row, ["Commodity"])
+                    caliber = self._get_field_value(row, ["Size/caliber/count"])
+                    net_weight_box = self._get_field_value(row, ["Net weight per box (kg)"])
+                    record[csv_field] = SafproCalculations.nb_of_fruits_per_box(caliber, commodity_code, net_weight_box)
                 elif csv_field in date_fields:
                     record[csv_field] = self._process_date_field(row, excel_columns)
                 else:

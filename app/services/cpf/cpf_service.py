@@ -26,7 +26,7 @@ class CpfService(BaseCpfService):
             "Variety": ["VARIETY"],
             "Size_caliber_count": ["SIZE"],
             "Nb of fruits per box": [],  # calculé
-            "Class": ["CLASS"],
+            "Class": [],
             "Brand": ["LABEL"],  # non dispo
             "Country of origin": [],  # via paramètre
             "Packaging": ["MATERIAL"],
@@ -74,27 +74,48 @@ class CpfService(BaseCpfService):
         for csv_field, excel_columns in self.pl_column_mapping.items():
             if csv_field in self.csv_settings and self.csv_settings[csv_field] is not None:
                 record[csv_field] = self.csv_settings[csv_field]
+
+            elif csv_field == "Class":
+                record[csv_field] = 1
+            elif csv_field == "Certifications":
+                record[csv_field] = "GG/SMETA"
+
+            elif csv_field == "Container No":
+                value = self._get_field_value(row, excel_columns)
+                if value:
+                    value = str(value).replace("-", "").strip()
+                record[csv_field] = value
+
+            elif csv_field == "Packaging type":
+                weight = self._get_field_value(row, ["Net weight per box (kg)"])
+                try:
+                    weight_float = float(weight)
+                    if weight_float == 10:
+                        value = f"Colis {int(weight_float)}KG Plastiques"
+                    elif weight_float == 4:
+                        value = f"Colis {int(weight_float)}KG"
+                    else:
+                        value = "Colis KG"
+                except Exception:
+                    value = "Colis KG"
+                record[csv_field] = value
+
             else:
                 value = self._get_field_value(row, excel_columns)
                 if csv_field in date_fields:
                     value = self._process_date_field(value)
                 record[csv_field] = value if value not in [None, "Non spécifié"] else ""
 
-        # ✅ Concatène Packaging type + poids → "CARTON 4 KG"
-        try:
-            pack_type = record.get("Packaging type", "").strip().upper()
-            net_weight = float(str(record.get("Net weight per box (kg)", "")).replace(",", "."))
-            if pack_type and net_weight:
-                record["Packaging type"] = f"{pack_type} {int(net_weight)} KG"
-        except Exception as e:
-            print(f"⚠️ Erreur concat packaging/net weight: {e}")
-
-        # ✅ Tare fixée à 0 (car Gross weight non fourni)
-        record["Box tare (kg)"] = 0
-
-        # ✅ Nb de fruits/boîte
-        caliber = self._get_field_value(row, ["SIZE"])
         net_per_box = self._get_field_value(row, ["NET WEIGHT"])
+        try:
+            weight_float = float(net_per_box)
+            box_tare = 0.32 if weight_float == 4 else 0.31
+        except Exception:
+            box_tare = 0.6
+        record["Box tare (kg)"] = box_tare
+
+        # ✅ Nb de fruits par boîte
+        caliber = self._get_field_value(row, ["SIZE"])
         record["Nb of fruits per box"] = CpfCalculations.nb_of_fruits_per_box(caliber, net_per_box)
 
         # ✅ Net weight per pallet
@@ -107,6 +128,8 @@ class CpfService(BaseCpfService):
         record["Nb of pallets"] = CpfCalculations.nb_of_pallets_by_palletnum(pallet, cartons, df, current_value=existing)
 
         return record
+
+
 
 
     def _get_field_value(self, row, excel_columns):

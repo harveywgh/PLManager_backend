@@ -48,3 +48,48 @@ class AthosCalculations:
                 return f"{ratio:.5f}".replace(".", ",")
         except Exception as e:
             print(f"⚠️ Erreur nb_of_pallets_by_palletnum: {e}")
+            
+    @staticmethod
+    def get_packaging_type(weight):
+        """
+        Déduit le type d’emballage à partir du poids net par boîte.
+        - 4 kg → 'Colis 4kg'
+        - 10 kg → 'Colis 10kg'
+        - Autre → ''
+        """
+        try:
+            weight = float(str(weight).replace(",", "."))
+            if weight == 4:
+                return "Colis 4kg"
+            elif weight == 10:
+                return "Colis 10kg"
+        except Exception as e:
+            print(f"⚠️ Erreur get_packaging_type: {e}")
+        return ""
+
+    @staticmethod
+    def get_brand_from_class(cat_value, default_brand):
+        """
+        Si la catégorie est 'CAT 1.5', retourne 'ATHOS B', sinon retourne la brand d’origine.
+        """
+        try:
+            if str(cat_value).strip().upper() == "CAT 1.5":
+                return "ATHOS B"
+        except Exception as e:
+            print(f"⚠️ Erreur get_brand_from_class: {e}")
+        return default_brand
+
+    @staticmethod
+    def clean_weight_value(value):
+        """
+        Nettoie le champ de poids pour ne garder que la valeur numérique.
+        Par exemple : '4.0 KG' → 4.0
+        """
+        try:
+            if isinstance(value, str):
+                value = value.replace("KG", "").strip().replace(",", ".")
+            return float(value)
+        except Exception as e:
+            print(f"⚠️ Erreur clean_weight_value: {e}")
+            return ""
+

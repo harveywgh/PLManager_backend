@@ -2,19 +2,6 @@ import pandas as pd
 
 class CpfCalculations:
     @staticmethod
-    def nb_of_fruits_per_box(caliber, weight):
-        try:
-            caliber = float(str(caliber).replace(",", "."))
-            weight = float(str(weight).replace(",", "."))
-            if weight == 4:
-                return int(caliber)
-            elif weight == 10:
-                return int(round(caliber * 2.5))
-        except Exception as e:
-            print(f"⚠️ CPF fruits/box error: {e}")
-        return ""
-
-    @staticmethod
     def nb_of_pallets_by_palletnum(pallet_num, boxes, df, current_value=None):
         try:
             if current_value not in [None, "", "0", "0,00000"]:
@@ -36,12 +23,13 @@ class CpfCalculations:
         try:
             if not caliber or not net_weight_per_box:
                 return ""
-            caliber = float(str(caliber).replace(",", "."))
-            net = float(str(net_weight_per_box).replace(",", "."))
 
-            if net == 4:
+            caliber = float(str(caliber).strip().replace(",", "."))
+            net = float(str(net_weight_per_box).strip().replace(",", "."))
+
+            if abs(net - 4) < 0.01:
                 return int(caliber)
-            elif net == 10:
+            elif abs(net - 10) < 0.01:
                 return int(round(caliber * 2.5))
         except Exception as e:
             print(f"⚠️ [CpfCalculations] Erreur calcul nb_of_fruits_per_box : {e}")

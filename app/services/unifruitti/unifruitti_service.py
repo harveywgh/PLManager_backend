@@ -20,7 +20,7 @@ class UnifruittiService(BaseUnifruittiService):
             "Port of arrival": ["Port of arrival"],
             "Packing house departure date": ["Packing house departure (dd/mm/yyyy)"],
             "ETA": ["ETA (dd/mm/yyyy)"],
-            "Exporter Ref": ["Exporter ref"],
+            "Exporter Ref": ["Container n°"],
             "Seal No": ["Cod. Tracabilidad"],
             "Container No": ["Container n°"],
             "Species": ["Product"],

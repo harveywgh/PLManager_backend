@@ -44,7 +44,7 @@ class BaseUnifruittiService:
         full_ref = exporter_ref if single_container else f"{exporter_ref}_{index}"
 
         for row in extracted_data:
-            row["Exporter Ref"] = full_ref
+            row["Expporter Ref"] = full_ref
 
         output_path = self._generate_csv_filename(output_dir, exporter_ref, index)
         self._write_to_csv(output_path, extracted_data)
@@ -59,16 +59,16 @@ class BaseUnifruittiService:
         Récupère la référence de l'exportateur pour nommer le fichier.
         Si non trouvée, utilise le numéro de conteneur. Sinon 'Unknown'.
         """
-        exporter_refs = container_df.get("Exporter ref", pd.Series()).dropna()
+        exporter_refs = container_df.get("Container n°", pd.Series()).dropna()
         if not exporter_refs.empty:
             return exporter_refs.iloc[0]
 
         container_nos = container_df.get("Container n°", pd.Series()).dropna()
         if not container_nos.empty:
-            print("⚠️ Aucun 'Exporter ref' trouvé, on utilise le 'Container n°'")
+            print("⚠️ Aucun 'Container n°' trouvé, on utilise le 'Container n°'")
             return container_nos.iloc[0]
 
-        print("⚠️ Aucun 'Exporter ref' ni 'Container n°' trouvé, on utilise 'Unknown'")
+        print("⚠️ Aucun 'Container n°' ni 'Container n°' trouvé, on utilise 'Unknown'")
         return "Unknown"
 
 
