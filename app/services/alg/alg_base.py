@@ -27,6 +27,7 @@ class BaseAlgService:
         AlgDataframeManager.normalize_columns(dataframe)
         AlgDataframeManager.validate_columns(dataframe, self.pl_column_mapping)
         AlgDataframeManager.add_missing_columns(dataframe, self.pl_column_mapping)
+        dataframe = AlgDataframeManager.regroup_by_pallet_and_caliber(dataframe)
         return dataframe
 
     def _group_containers(self, dataframe):

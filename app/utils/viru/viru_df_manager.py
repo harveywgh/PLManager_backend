@@ -36,8 +36,7 @@ class ViruDataframeManager:
     def regroup_by_pallet_and_caliber(df):
         sum_cols = [
             "Net weight per pallet (kg)",
-            "Cartons per pallet",
-            "Quantity per grower"
+            "Number of boxes",
         ]
 
         # 🔹 Conversion propre
@@ -52,21 +51,21 @@ class ViruDataframeManager:
                 )
 
         # 🔹 Validation
-        for col in ["Pallet n°", "Size"]:
+        for col in ["Supplier pallet number", "Size"]:
             if col not in df.columns:
                 raise ValueError(f"❌ Colonne manquante : {col}")
 
         # 🔹 Agrégation
-        grouped_df = df.groupby(["Pallet n°", "Size"], as_index=False).agg(
+        grouped_df = df.groupby(["Supplier pallet number", "Size"], as_index=False).agg(
             {col: "sum" if col in sum_cols else "first" for col in df.columns if col != "Nb of pallets"}
         )
 
-        # 🔹 Calcul de Nb of pallets basé uniquement sur Quantity per grower
-        if "Quantity per grower" not in grouped_df.columns:
-            raise ValueError("❌ 'Quantity per grower' est requis pour calculer 'Nb of pallets'.")
+        # 🔹 Calcul de Nb of pallets basé uniquement sur Number of boxes
+        if "Number of boxes" not in grouped_df.columns:
+            raise ValueError("❌ 'Number of boxes' est requis pour calculer 'Nb of pallets'.")
 
-        total = grouped_df.groupby("Pallet n°")["Quantity per grower"].transform("sum")
-        grouped_df["Nb of pallets"] = grouped_df["Quantity per grower"] / total
+        total = grouped_df.groupby("Supplier pallet number")["Number of boxes"].transform("sum")
+        grouped_df["Nb of pallets"] = grouped_df["Number of boxes"] / total
         grouped_df["Nb of pallets"] = grouped_df["Nb of pallets"].round(5)
 
         return grouped_df

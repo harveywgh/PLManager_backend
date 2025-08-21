@@ -3,7 +3,6 @@ from fastapi.responses import FileResponse
 from pydantic import BaseModel
 import os
 import uuid
-import shutil
 import pandas as pd
 from fastapi import File, Form
 from ..services.southern_fruit_alliance.southern_fruit_alliance_service import SFAService
@@ -12,6 +11,7 @@ from ..services.safpro.safpro_service import SafproService
 from ..services.alg.alg_service import AlgService
 from ..services.langplaas.langplaas_service import LangplaasService
 from ..services.athos.athos_service import AthosService
+from ..services.athosv2.athosv2_service import AthosV2Service
 from ..services.asica.asica_service import AsicaService
 from ..services.laran.laran_service import LaranService
 from ..services.angon.angon_service import AngonService
@@ -24,7 +24,10 @@ from ..services.mavuno.mavuno_service import MavunoService
 from ..services.jorie.jorie_service import JorieService
 from ..services.kakuzi.kakuzi_service import KakuziService
 from ..services.viru.viru_service import ViruService
-
+from ..services.hnp.hnp_service import HnpService
+from ..services.swellen.swellen_service import SwellenService
+from ..services.shalimar.shalimar_service import ShalimarService
+from ..services.ingophase.ingophase_service import IngophaseService
 
 
 router = APIRouter()
@@ -43,6 +46,7 @@ FOURNISSEURS_SUPPORTES = {
     "ALG": AlgService,
     "Langplaas": LangplaasService,
     "Exportadora Fruticola Athos": AthosService,
+    "Exportadora Fruticola Athos V2": AthosV2Service,
     "Asica": AsicaService,
     "Laran": LaranService,
     "Jaguacy": JaguacyService,
@@ -58,6 +62,12 @@ FOURNISSEURS_SUPPORTES = {
     "Jorie": JorieService,
     "Kakuzi": KakuziService,
     "Viru": ViruService,
+    "Avaleza": ViruService,
+    "HNP": HnpService,
+    "Swellen" : SwellenService,
+    "Shalimar" : ShalimarService,
+    "Ingophase" : IngophaseService,
+    "Mountain Avocado" : JaguacyService,
 }
 
 # Dictionnaire pour stocker temporairement les paramètres CSV

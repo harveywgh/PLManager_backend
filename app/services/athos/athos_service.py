@@ -85,39 +85,29 @@ class AthosService(BaseAthosService):
                 if csv_field in date_fields:
                     value = self._process_date_field(value)
                 record[csv_field] = value if value not in [None, "Non spécifié"] else ""
-        
-        # ➕ Calcul Nb of fruits per box
-        caliber = self._get_field_value(row, ["Size"])
-        weight = self._get_field_value(row, ["Net weight per box (kg)"])
-        record["Nb of fruits per box"] = AthosCalculations.nb_of_fruits_per_box(caliber, weight)
-        # Ne rien recalculer ici, la valeur est déjà correcte après le regroupement
-        record["Nb of pallets"] = self._get_field_value(row, ["Nb of pallets"])
-        
-        # ➕ Déduire Packaging type selon Net weight per box (kg)
-        try:
-            net_weight_per_box = str(record.get("Net weight per box (kg)", "")).replace(",", ".")
-            if net_weight_per_box:
-                weight_float = float(net_weight_per_box)
-                if weight_float == 4:
-                    record["Packaging type"] = "Colis 4kg"
-                elif weight_float == 10:
-                    record["Packaging type"] = "Colis 10kg"
-                else:
-                    record["Packaging type"] = ""  # ou "Autre" si souhaité
-        except Exception as e:
-            print(f"⚠️ Erreur lors de l’attribution du Packaging type : {e}")
-            record["Packaging type"] = ""
-        
-        # ✅ Remplace la Brand par "ATHOS B" si Cat vaut 1.5
-        try:
-            class_val = str(record.get("Class", "")).strip().upper()
-            if class_val == "CAT 1.5":
-                record["Brand"] = "ATHOS B"
-        except Exception as e:
-            print(f"⚠️ Erreur lors de la vérification de Cat = 1.5 : {e}")
 
+        # 🔢 Caliber et poids brut
+        caliber = self._get_field_value(row, self.pl_column_mapping.get("Size_caliber_count", []))
+        raw_weight = self._get_field_value(row, self.pl_column_mapping.get("Net weight per box (kg)", []))
+        
+        # ✅ Nettoyage du poids
+        clean_weight = AthosCalculations.clean_weight_value(raw_weight)
+        record["Net weight per box (kg)"] = clean_weight
+
+        # ✅ Fruits / box
+        record["Nb of fruits per box"] = AthosCalculations.nb_of_fruits_per_box(caliber, clean_weight)
+
+        # ✅ Packaging type
+        record["Packaging type"] = AthosCalculations.get_packaging_type(clean_weight)
+
+        # ✅ Brand spécial pour CAT 1.5
+        record["Brand"] = AthosCalculations.get_brand_from_class(record.get("Class", ""), record.get("Brand", ""))
+
+        # ✅ Nb de palettes (déjà présent ou laissé vide si non défini)
+        record["Nb of pallets"] = self._get_field_value(row, ["Nb of pallets"])
 
         return record
+
 
 
     def _get_field_value(self, row, excel_columns):

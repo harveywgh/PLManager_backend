@@ -20,6 +20,7 @@ class AthosDataframeManager:
         if missing:
             print(f"⚠️ Colonnes manquantes détectées : {missing}")
 
+
     @staticmethod
     def add_missing_columns(df, column_mapping):
         """
@@ -51,12 +52,12 @@ class AthosDataframeManager:
                 )
 
         # 🔹 Validation
-        for col in ["Pallet n°", "Size"]:
+        for col in ["Pallet n°", "Size", "Cat"]:
             if col not in df.columns:
                 raise ValueError(f"❌ Colonne manquante : {col}")
 
         # 🔹 Agrégation
-        grouped_df = df.groupby(["Pallet n°", "Size"], as_index=False).agg(
+        grouped_df = df.groupby(["Pallet n°", "Size", "Cat"], as_index=False).agg(
             {col: "sum" if col in sum_cols else "first" for col in df.columns if col != "Nb of pallets"}
         )
 

@@ -48,3 +48,31 @@ class ViruCalculations:
                 return f"{ratio:.5f}".replace(".", ",")
         except Exception as e:
             print(f"⚠️ Erreur nb_of_pallets_by_palletnum: {e}")
+    
+    @staticmethod
+    def net_weight_per_pallet(cartons, weight_per_box):
+        """
+        Calcule le poids net total d'une palette :
+        Net weight per pallet = Cartons per pallet × Net weight per box (kg)
+        """
+        try:
+            cartons = float(str(cartons).replace(",", "."))
+            weight = float(str(weight_per_box).replace(",", "."))
+            return round(cartons * weight, 2)
+        except Exception as e:
+            print(f"⚠️ Erreur net_weight_per_pallet: {e}")
+            return ""
+        
+    @staticmethod
+    def box_tare(weight_per_box):
+        """
+        Calcule la tare de la boîte selon le poids :
+        - Si poids = 4 kg → tare = 0.31
+        - Sinon → tare = 0.6
+        """
+        try:
+            weight_float = float(str(weight_per_box).replace(",", "."))
+            return 0.32 if weight_float == 4 else 0.4
+        except Exception as e:
+            print(f"⚠️ Erreur box_tare: {e}")
+            return 0.6

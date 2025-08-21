@@ -213,6 +213,8 @@ class KakuziService(BaseKakuziService):
                 value = "MOMBASA"
             elif csv_field == "Shipping line":
                 value = "MAERSK"
+            elif csv_field == "Certifications":
+                record[csv_field] = "GG/SMETA"
             elif csv_field == "Class":
                 value = 1
             elif csv_field == "Seal No":

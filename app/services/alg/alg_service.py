@@ -76,9 +76,9 @@ class AlgService(BaseAlgService):
     def _extract_data(self, container_df):
         extracted_data = []
         for _, row in container_df.iterrows():
-            record = self._extract_row_data(row)
-            extracted_data.append(record)
+            extracted_data.append(self._extract_row_data(row)) 
         return extracted_data
+
 
     def _extract_row_data(self, row):
         record = {}
@@ -86,21 +86,22 @@ class AlgService(BaseAlgService):
 
         for csv_field, excel_columns in self.pl_column_mapping.items():
             if csv_field in self.csv_settings and self.csv_settings[csv_field] is not None:
-                print(f"✅ Remplacement {csv_field} → {self.csv_settings[csv_field]}")
                 record[csv_field] = self.csv_settings[csv_field]
             else:
+                value = self._get_field_value(row, excel_columns)
+
                 if csv_field == "Exporter Name":
-                    record[csv_field] = "ALG"
+                    value = "ALG"
 
                 elif csv_field == "Box tare (kg)":
-                    record[csv_field] = AlgCalculations.box_tare(
+                    value = AlgCalculations.box_tare(
                         row.get("Gross Weight", 0),
                         row.get("Nett Weight", 0),
                         row.get("No Cartons", 0)
                     )
 
                 elif csv_field == "Net weight per box (kg)":
-                    record[csv_field] = AlgCalculations.net_weight_per_box(
+                    value = AlgCalculations.net_weight_per_box(
                         row.get("Nett Weight", 0),
                         row.get("No Cartons", 0)
                     )
@@ -109,22 +110,19 @@ class AlgService(BaseAlgService):
                     species = row.get("Commodity Code", "").strip()
                     caliber = row.get("Count Code", "")
                     if species == "SC":
-                        record[csv_field] = AlgCalculations.nb_fruits_mandarines(caliber)
+                        value = AlgCalculations.nb_fruits_mandarines(caliber)
                     else:
-                        record[csv_field] = caliber
+                        value = caliber
+                elif csv_field == "Nb of pallets":
+                    record[csv_field] = self._get_field_value(row, ["Nb of pallets"])
 
                 elif csv_field in date_fields:
-                    record[csv_field] = self._process_date_field(row, excel_columns)
+                    value = self._process_date_field(row, excel_columns)
 
-                else:
-                    record[csv_field] = self._get_field_value(row, excel_columns)
+                record[csv_field] = value if value not in [None, "", "Non spécifié"] else ""
 
-            # Normalisation vide
-            if record[csv_field] in [None, "", "Non spécifié"]:
-                record[csv_field] = ""
-
-        print("📌 Données extraites après correction :", record)
         return record
+
 
 
 
